@@ -1,5 +1,6 @@
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QCheckBox, QFrame, QHBoxLayout, QPushButton
+from qtpy.QtGui import QCursor
+from qtpy.QtWidgets import QCheckBox, QFrame, QHBoxLayout, QMenu, QPushButton
 
 from ...utils.interactions import KEY_SYMBOLS
 
@@ -31,14 +32,20 @@ class QtLayerButtons(QFrame):
 
         self.viewer = viewer
         self.deleteButton = QtDeleteButton(self.viewer)
+
+        context_menu = QMenu()
+        for n in range(2, 6):
+            context_menu.addAction(f'add {n}D points layer')
+
         self.newPointsButton = QtViewerPushButton(
             self.viewer,
             'new_points',
             'New points layer',
-            lambda: self.viewer.add_points(
+            slot=lambda: self.viewer.add_points(
                 ndim=max(self.viewer.dims.ndim, 2),
                 scale=self.viewer.layers.extent.step,
             ),
+            secondary_slot=lambda: context_menu.popup(QCursor.pos()),
         )
 
         self.newShapesButton = QtViewerPushButton(
@@ -65,6 +72,20 @@ class QtLayerButtons(QFrame):
         layout.addStretch(0)
         layout.addWidget(self.deleteButton)
         self.setLayout(layout)
+
+    @property
+    def _points_button_context_menu(self):
+        print('in QMenu creation')
+        context_menu = QMenu()
+        for n in range(2, 6):
+            context_menu.addAction(f'add {n}D points layer')
+        return context_menu
+
+    def _popup_context_menu(self):
+        print('in popup method')
+        print(QCursor.pos())
+        print(self._points_button_context_menu.actions())
+        self._points_button_context_menu.popup(QCursor.pos())
 
 
 class QtViewerButtons(QFrame):
@@ -221,7 +242,9 @@ class QtViewerPushButton(QPushButton):
         Napari viewer containing the rendered scene, layers, and controls.
     """
 
-    def __init__(self, viewer, button_name, tooltip=None, slot=None):
+    def __init__(
+        self, viewer, button_name, tooltip=None, slot=None, secondary_slot=None
+    ):
         super().__init__()
 
         self.viewer = viewer
@@ -229,6 +252,12 @@ class QtViewerPushButton(QPushButton):
         self.setProperty('mode', button_name)
         if slot is not None:
             self.clicked.connect(slot)
+
+        if secondary_slot is not None:
+            # Enable context menu on secondary click
+            # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
+            self.setContextMenuPolicy(Qt.ContextMenuPolicy(3))
+            self.customContextMenuRequested.connect(secondary_slot)
 
 
 class QtGridViewButton(QCheckBox):
