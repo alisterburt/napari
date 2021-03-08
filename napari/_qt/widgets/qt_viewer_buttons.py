@@ -254,7 +254,7 @@ class QtViewerPushButton(QPushButton):
             self.clicked.connect(slot)
 
         if secondary_slot is not None:
-            # Enable context menu on secondary click
+            # Enable on secondary click
             # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
             self.setContextMenuPolicy(Qt.ContextMenuPolicy(3))
             self.customContextMenuRequested.connect(secondary_slot)
