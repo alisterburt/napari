@@ -33,16 +33,6 @@ class QtLayerButtons(QFrame):
         self.viewer = viewer
         self.deleteButton = QtDeleteButton(self.viewer)
 
-        context_menu = QMenu()
-        for n in range(2, 6):
-            action = context_menu.addAction(f'add {n}D points layer')
-            action.triggered.connect(
-                lambda: self.viewer.add_points(
-                    ndim=n,
-                    scale=self.viewer.layers.extent.step,
-                )
-            )
-
         self.newPointsButton = QtViewerPushButton(
             self.viewer,
             'new_points',
@@ -51,7 +41,7 @@ class QtLayerButtons(QFrame):
                 ndim=max(self.viewer.dims.ndim, 2),
                 scale=self.viewer.layers.extent.step,
             ),
-            secondary_slot=lambda: context_menu.popup(QCursor.pos()),
+            secondary_slot=self._points_context_menu,
         )
 
         self.newShapesButton = QtViewerPushButton(
@@ -79,7 +69,6 @@ class QtLayerButtons(QFrame):
         layout.addWidget(self.deleteButton)
         self.setLayout(layout)
 
-    @property
     def _points_context_menu(self):
         context_menu = QMenu()
         for n in range(2, 6):
@@ -90,13 +79,10 @@ class QtLayerButtons(QFrame):
                     scale=self.viewer.layers.extent.step,
                 )
             )
-        return context_menu
-
-    def _popup_context_menu(self):
-        print('in popup method')
+        print(context_menu)
+        print(context_menu.actions())
         print(QCursor.pos())
-        print(self._points_button_context_menu.actions())
-        self._points_button_context_menu.popup(QCursor.pos())
+        context_menu.popup(QCursor.pos())
 
 
 class QtViewerButtons(QFrame):
