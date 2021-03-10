@@ -70,19 +70,16 @@ class QtLayerButtons(QFrame):
         self.setLayout(layout)
 
     def _points_context_menu(self):
-        context_menu = QMenu()
+        self.context_menu = QMenu()
         for n in range(2, 6):
-            action = context_menu.addAction(f'add {n}D points layer')
+            action = self.context_menu.addAction(f'add {n}D points layer')
             action.triggered.connect(
                 lambda: self.viewer.add_points(
                     ndim=n,
                     scale=self.viewer.layers.extent.step,
                 )
             )
-        print(context_menu)
-        print(context_menu.actions())
-        print(QCursor.pos())
-        context_menu.popup(QCursor.pos())
+        self.context_menu.popup(QCursor.pos())
 
 
 class QtViewerButtons(QFrame):
