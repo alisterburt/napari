@@ -258,6 +258,20 @@ void main() {{
     // and texture coordinates
     vec3 intersection_tex = intersection / u_shape;
     
+    if (intersection_tex.x > 1.0 )
+        discard;
+    if (intersection_tex.y > 1.0 )
+        discard;
+    if (intersection_tex.z > 1.0 )
+        discard;
+    if (intersection_tex.x < 0.0 )
+        discard;
+    if (intersection_tex.y < 0.0 )
+        discard;
+    if (intersection_tex.z < 0.0 )
+        discard;
+
+    
     
     
     
@@ -345,7 +359,7 @@ MIP_SNIPPETS = dict(
         // Refine search for max value
         loc = start_loc + step * (float(maxi) - 0.5);
         for (int i=0; i<10; i++) {
-            maxval = max(maxval, $sample(u_volumetex, loc).g);
+            maxval = max(maxval, $sample(u_volumetex, intersection_tex).g);
             loc += step * 0.1;
         }
         gl_FragColor = applyColormap(maxval);
