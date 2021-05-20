@@ -103,7 +103,7 @@ const float u_shininess = 40.0;
 // uniforms for plane definition. 
 // Hard coded until we figure out the plane shader.
 // defined in data coordinates.
-const vec3 u_plane_normal = vec3(0.0, 0.0, 1.0);
+const vec3 u_plane_normal = vec3(1.0, 1.0, 1.0);
 const vec3 u_plane_position = vec3(64.0, 64.0, 64.0);
 
 //varying vec3 lightDirs[1];
@@ -247,9 +247,38 @@ void main() {{
 
     // Now we have the starting position on the front surface
     vec3 front = v_position + view_ray * distance;
+    
+    
+    
+    
+    // #####      PLANE SHADER TEST ZONE        #####
+    
+    // find intersection of view ray with plane in data coordinates
+    vec3 intersection = intersectLinePlane(v_position.xyz, view_ray, u_plane_normal, u_plane_position);
+    // and texture coordinates
+    vec3 intersection_tex = intersection / u_shape;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     // Decide how many steps to take
-    int nsteps = int(-distance / u_relative_step_size + 0.5);
+    // int nsteps = int(-distance / u_relative_step_size + 0.5);
+    int nsteps = 5;
     float f_nsteps = float(nsteps);
     if( nsteps < 1 )
         discard;
@@ -273,7 +302,7 @@ void main() {{
         for (iter=iter; iter<nsteps; iter++)
         {{
             // Get sample color
-            vec4 color = $sample(u_volumetex, loc);
+            vec4 color = $sample(u_volumetex, intersection_tex);
             float val = color.g;
 
             {in_loop}
