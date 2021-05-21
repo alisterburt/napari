@@ -100,12 +100,6 @@ const vec4 u_diffuse = vec4(0.8, 0.2, 0.2, 1.0);
 const vec4 u_specular = vec4(1.0, 1.0, 1.0, 1.0);
 const float u_shininess = 40.0;
 
-// uniforms for plane definition. 
-// Hard coded until we figure out the plane shader.
-// defined in data coordinates.
-const vec3 u_plane_normal = vec3(1.0, 1.0, 1.0);
-const vec3 u_plane_position = vec3(64.0, 64.0, 64.0);
-
 //varying vec3 lightDirs[1];
 
 // global holding view direction in local coordinates
@@ -207,24 +201,6 @@ vec4 calculateColor(vec4 betterColor, vec3 loc, vec3 step)
     return final_color;
 }}
 
-vec3 intersectLinePlane(vec3 lineStart, 
-                        vec3 lineVector, 
-                        vec3 planeNormal, 
-                        vec3 planePosition) {{
-    // function to find the intersection between a line and a plane
-    // line is defined by position and vector
-    // plane is defined by position and normal vector
-    // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
-    
-    // find scale factor for line vector
-    float scaleFactor = dot(planePosition - lineStart, planeNormal) / 
-                        dot(lineVector, planeNormal);
-    
-    // calculate intersection
-    return lineStart + ( scaleFactor * lineVector );
-}}
-
-
 // for some reason, this has to be the last function in order for the
 // filters to be inserted in the correct place...
 
@@ -247,52 +223,9 @@ void main() {{
 
     // Now we have the starting position on the front surface
     vec3 front = v_position + view_ray * distance;
-    
-    
-    
-    
-    // #####      PLANE SHADER TEST ZONE        #####
-    
-    // find intersection of view ray with plane in data coordinates
-    vec3 intersection = intersectLinePlane(v_position.xyz, view_ray, u_plane_normal, u_plane_position);
-    // and texture coordinates
-    vec3 intersection_tex = intersection / u_shape;
-    
-    if (intersection_tex.x > 1.0 )
-        discard;
-    if (intersection_tex.y > 1.0 )
-        discard;
-    if (intersection_tex.z > 1.0 )
-        discard;
-    if (intersection_tex.x < 0.0 )
-        discard;
-    if (intersection_tex.y < 0.0 )
-        discard;
-    if (intersection_tex.z < 0.0 )
-        discard;
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     // Decide how many steps to take
-    // int nsteps = int(-distance / u_relative_step_size + 0.5);
-    int nsteps = 5;
+    int nsteps = int(-distance / u_relative_step_size + 0.5);
     float f_nsteps = float(nsteps);
     if( nsteps < 1 )
         discard;
@@ -316,7 +249,7 @@ void main() {{
         for (iter=iter; iter<nsteps; iter++)
         {{
             // Get sample color
-            vec4 color = $sample(u_volumetex, intersection_tex);
+            vec4 color = $sample(u_volumetex, loc);
             float val = color.g;
 
             {in_loop}
@@ -359,7 +292,7 @@ MIP_SNIPPETS = dict(
         // Refine search for max value
         loc = start_loc + step * (float(maxi) - 0.5);
         for (int i=0; i<10; i++) {
-            maxval = max(maxval, $sample(u_volumetex, intersection_tex).g);
+            maxval = max(maxval, $sample(u_volumetex, loc).g);
             loc += step * 0.1;
         }
         gl_FragColor = applyColormap(maxval);
