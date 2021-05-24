@@ -9,8 +9,8 @@ import napari
 
 blobs = np.asarray(
     [
-        binary_blobs(length=64, volume_fraction=0.1, n_dim=3).astype(float)
-        for i in range(10)
+        binary_blobs(length=128, volume_fraction=0.1, n_dim=3).astype(float)
+        for i in range(3)
     ]
 )
 viewer = napari.Viewer(ndisplay=3)

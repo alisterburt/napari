@@ -12,7 +12,7 @@ from ...utils.events import Event
 from ..base import Layer
 from ..intensity_mixin import IntensityVisualizationMixin
 from ..utils.layer_utils import calc_data_range
-from ._image_constants import Interpolation, Interpolation3D, Rendering
+from ._image_constants import Interpolation, Interpolation3D, Rendering, Shader
 from ._image_slice import ImageSlice
 from ._image_slice_data import ImageSliceData
 from ._image_utils import guess_multiscale, guess_rgb
@@ -168,6 +168,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         contrast_limits=None,
         gamma=1,
         interpolation='nearest',
+        shader='volume',
         rendering='mip',
         iso_threshold=0.5,
         attenuation=0.05,
@@ -224,6 +225,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
 
         self.events.add(
             interpolation=Event,
+            shader=Event,
             rendering=Event,
             iso_threshold=Event,
             attenuation=Event,
@@ -272,6 +274,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
             ),
         }
         self.interpolation = interpolation
+        self.shader = shader
         self.rendering = rendering
 
         # Trigger generation of view slice and thumbnail
@@ -470,6 +473,24 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         """Set current rendering mode."""
         self._rendering = Rendering(rendering)
         self.events.rendering()
+
+    @property
+    def shader(self):
+        """Return current shader mode.
+
+        Selects a preset base shader for volumetric rendering in vispy.
+        Options include:
+
+        * ``volume``: ray is cast through a volume.
+        * ``plane``: ray is cast perpendicular to a plane through a volume.
+        """
+        return str(self._shader)
+
+    @shader.setter
+    def shader(self, shader):
+        """Set current shader mode."""
+        self._shader = Shader(shader)
+        self.events.shader()
 
     @property
     def loaded(self):

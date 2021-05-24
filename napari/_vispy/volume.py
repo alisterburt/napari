@@ -9,6 +9,7 @@ from .vendored.volume import ISO_SNIPPETS, MIP_SNIPPETS, TRANSLUCENT_SNIPPETS
 from .vendored.volume import frag_dict as frag_dict_volume
 
 # Fragment shader for rendering arbitrary planes through volumes.
+# A ray is cast perpendicular to plane and computation is performed
 # this fragment shader is designed to be compatible with the snippets used in
 # volumetric rendering from vispy/napari
 FRAG_SHADER_PLANE = """
@@ -342,6 +343,7 @@ frag_dict_plane['average'] = AVG_FRAG_SHADER_PLANE
 class Volume(BaseVolume):
     def __init__(self, *args, **kwargs):
         self._attenuation = 1.0
+        self._shader = 'plane'
         super().__init__(*args, **kwargs)
 
     @property
@@ -385,6 +387,27 @@ class Volume(BaseVolume):
         self.update()
 
     @property
+    def shader(self):
+        return self._shader
+
+    @shader.setter
+    def shader(self, value):
+        """Set the base shader used for volume rendering"""
+        if value not in ('volume', 'plane'):
+            raise ValueError('value not in volume, plane')
+        self._shader = value
+        self.shared_program.frag = self.frag_dict[self.method]
+        self.update()
+
+    @property
+    def frag_dict(self):
+        """dict of fragment shaders"""
+        if self.shader == 'volume':
+            return frag_dict_volume
+        elif self.shader == 'plane':
+            return frag_dict_plane
+
+    @property
     def method(self):
         """The render method to use
 
@@ -405,7 +428,7 @@ class Volume(BaseVolume):
     @method.setter
     def method(self, method):
         # Check and save
-        known_methods = list(frag_dict_plane.keys())
+        known_methods = list(self.frag_dict.keys())
         if method not in known_methods:
             raise ValueError(
                 'Volume render method should be in %r, not %r'
@@ -416,7 +439,7 @@ class Volume(BaseVolume):
         if 'u_threshold' in self.shared_program:
             self.shared_program['u_threshold'] = None
 
-        self.shared_program.frag = frag_dict_plane[method]
+        self.shared_program.frag = self.frag_dict[method]
         self.shared_program.frag['sampler_type'] = self._tex.glsl_sampler_type
         self.shared_program.frag['sample'] = self._tex.glsl_sample
         self.shared_program.frag['cmap'] = Function(self._cmap.glsl_map)

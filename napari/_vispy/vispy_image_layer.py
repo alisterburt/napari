@@ -40,6 +40,7 @@ class VispyImageLayer(VispyBaseLayer):
 
         self._array_like = True
 
+        self.layer.events.shader.connect(self._on_shader_change)
         self.layer.events.rendering.connect(self._on_rendering_change)
         self.layer.events.interpolation.connect(self._on_interpolation_change)
         self.layer.events.colormap.connect(self._on_colormap_change)
@@ -118,6 +119,11 @@ class VispyImageLayer(VispyBaseLayer):
 
     def _on_interpolation_change(self, event=None):
         self.node.interpolation = self.layer.interpolation
+
+    def _on_shader_change(self, event=None):
+        if isinstance(self.node, VolumeNode):
+            self.node.shader = self.layer.shader
+            self._on_rendering_change()
 
     def _on_rendering_change(self, event=None):
         if isinstance(self.node, VolumeNode):
