@@ -37,9 +37,9 @@ const float u_shininess = 40.0;
 // uniforms for plane definition. 
 // Hard coded until we figure out the plane shader.
 // defined in data coordinates.
-const vec3 u_plane_normal = vec3(1.0, 1.0, 1.0);
-const vec3 u_plane_position = vec3(64.0, 64.0, 64.0);
-const float u_plane_thickness = 10.0;
+uniform vec3 u_plane_normal = vec3(1.0, 1.0, 1.0);
+uniform vec3 u_plane_position = vec3(64.0, 64.0, 64.0);
+uniform float u_plane_thickness = 10.0;
 
 //varying vec3 lightDirs[1];
 
