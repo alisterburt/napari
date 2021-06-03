@@ -85,11 +85,17 @@ class VispySurfaceLayer(VispyBaseLayer):
     def _on_shading_change(self, event=None):
         if self.layer.shading == 'none':
             self.node.shading = None
+            if self.node.shading_filter is not None:
+                self.node.shading_filter._attached = False
         elif self.layer._ndisplay < 3:
             warnings.warn(
-                trans._("Alternative shading modes are only available in 3D")
+                trans._(
+                    "Alternative shading modes are only available in 3D, defaulting to none"
+                )
             )
             self.node.shading = None
+            if self.node.shading_filter is not None:
+                self.node.shading_filter._attached = False
         else:
             self.node.shading = self.layer.shading
         self.node.mesh_data_changed()
