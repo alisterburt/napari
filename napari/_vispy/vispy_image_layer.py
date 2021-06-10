@@ -49,6 +49,14 @@ class VispyImageLayer(VispyBaseLayer):
         self.layer.events.gamma.connect(self._on_gamma_change)
         self.layer.events.iso_threshold.connect(self._on_iso_threshold_change)
         self.layer.events.attenuation.connect(self._on_attenuation_change)
+        self.layer.events.mode.connect(self._on_mode_change)
+        self.layer.events.plane_position.connect(
+            self._on_plane_position_change
+        )
+        self.layer.events.plane_thickness.connect(
+            self._on_plane_thickness_change
+        )
+        self.layer.events.plane_angles.connect(self._on_plane_angles_change)
 
         self._on_display_change()
         self._on_data_change()

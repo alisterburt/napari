@@ -239,7 +239,16 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
             rendering=Event,
             iso_threshold=Event,
             attenuation=Event,
+            mode=Event,
+            plane_thickness=Event,
+            plane_position=Event,
+            plane_angles=Event,
         )
+
+        self._mode = 'plane'  # Against @jni's objections
+        self._plane_thickness = 1
+        self._plane_position = np.zeros(3)
+        self._plane_angles = np.zeros(2)
 
         # Set data
         self.rgb = rgb
@@ -264,7 +273,8 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
 
         self._new_empty_slice()
 
-        # Set contrast_limits and colormaps
+        # Set contrast
+        # _limits and colormaps
         self._gamma = gamma
         self._iso_threshold = iso_threshold
         self._attenuation = attenuation
@@ -482,6 +492,46 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         """Set current rendering mode."""
         self._rendering = Rendering(rendering)
         self.events.rendering()
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: str):
+        if self._mode != value:
+            self._mode = value
+            self.events.mode()
+
+    @property
+    def plane_thickness(self):
+        return self._plane_thickness
+
+    @plane_thickness.setter
+    def plane_thickness(self, value):
+        if self._plane_thickness != value:
+            self._plane_thickness = value
+            self.events.plane_thickness()
+
+    @property
+    def plane_position(self):
+        return self._plane_position
+
+    @plane_position.setter
+    def plane_position(self, value):
+        if np.all(self._plane_position != value):
+            self._plane_position = value
+            self.events.plane_position()
+
+    @property
+    def plane_angles(self):
+        return self._plane_angles
+
+    @plane_angles.setter
+    def plane_angles(self, value):
+        if np.all(self._plane_angles != value):
+            self._plane_angles = value
+            self.events.plane_angles()
 
     @property
     def loaded(self):
