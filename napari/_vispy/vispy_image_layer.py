@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 from vispy.color import Colormap as VispyColormap
 from vispy.scene.node import Node
 
@@ -150,6 +151,27 @@ class VispyImageLayer(VispyBaseLayer):
     def _on_attenuation_change(self, event=None):
         if isinstance(self.node, VolumeNode):
             self.node.attenuation = self.layer.attenuation
+
+    def _on_mode_change(self, event=None):
+        print(self.layer.mode)
+        if isinstance(self.node, VolumeNode):
+            self.node.mode = self.layer.mode
+
+    def _on_plane_thickness_change(self, event=None):
+        if isinstance(self.node, VolumeNode):
+            self.node.plane_thickness = self.layer.plane_thickness
+
+    def _on_plane_position_change(self, event=None):
+        if isinstance(self.node, VolumeNode):
+            self.node.plane_position = self.layer.plane_position
+
+    def _on_plane_angles_change(self, event=None):
+        if isinstance(self.node, VolumeNode):
+            initial_normal = np.array([1, 0, 0])
+            rot = Rotation.from_euler(
+                'yz', self.layer.plane_angles
+            ).as_matrix()
+            self.node.plane_normal = rot @ initial_normal
 
     def reset(self, event=None):
         self._reset_base()
