@@ -153,7 +153,6 @@ class VispyImageLayer(VispyBaseLayer):
             self.node.attenuation = self.layer.attenuation
 
     def _on_mode_change(self, event=None):
-        print(self.layer.mode)
         if isinstance(self.node, VolumeNode):
             self.node.mode = self.layer.mode
 
