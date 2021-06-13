@@ -168,7 +168,7 @@ class VispyImageLayer(VispyBaseLayer):
         if isinstance(self.node, VolumeNode):
             initial_normal = np.array([1, 0, 0])
             rot = Rotation.from_euler(
-                'yz', self.layer.plane_angles
+                'yz', self.layer.plane_angles, degrees=True
             ).as_matrix()
             self.node.plane_normal = rot @ initial_normal
 

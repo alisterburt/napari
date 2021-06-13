@@ -1,9 +1,16 @@
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QComboBox, QHBoxLayout, QLabel, QSlider
+from qtpy.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
+    QHBoxLayout,
+    QLabel,
+    QSlider,
+)
 
 from ...layers.image._image_constants import (
     Interpolation,
     Interpolation3D,
+    RaycastingMode,
     Rendering,
 )
 from ...utils.translations import trans
@@ -47,9 +54,13 @@ class QtImageControls(QtBaseImageControls):
 
         self.layer.events.interpolation.connect(self._on_interpolation_change)
         self.layer.events.rendering.connect(self._on_rendering_change)
+        self.layer.events.mode.connect(self._on_mode_change)
         self.layer.events.iso_threshold.connect(self._on_iso_threshold_change)
         self.layer.events.attenuation.connect(self._on_attenuation_change)
         self.layer.events._ndisplay.connect(self._on_ndisplay_change)
+        # self.layer.events.plane_thickness.connect(self._on_plane_thickness_change)
+        # self.layer.events.plane_position.connect(self._on_plane_thickness_change)
+        # self.layer.events.plane_angles.connect(self._on_plane_angles_change)
 
         self.interpComboBox = QComboBox(self)
         self.interpComboBox.activated[str].connect(self.changeInterpolation)
@@ -64,6 +75,23 @@ class QtImageControls(QtBaseImageControls):
         renderComboBox.activated[str].connect(self.changeRendering)
         self.renderComboBox = renderComboBox
         self.renderLabel = QLabel(trans._('rendering:'))
+
+        raycastingModeComboBox = QComboBox(self)
+        raycastingModeComboBox.addItems(RaycastingMode.keys())
+        index = raycastingModeComboBox.findText(
+            self.layer.mode, Qt.MatchFixedString
+        )
+        raycastingModeComboBox.setCurrentIndex(index)
+        raycastingModeComboBox.activated[str].connect(self.changeMode)
+        self.raycastingModeComboBox = raycastingModeComboBox
+        self.raycastingModeLabel = QLabel(trans._('raycasting mode:'))
+
+        planeThicknessDoubleSpinBox = QDoubleSpinBox(self)
+        planeThicknessDoubleSpinBox.valueChanged.connect(
+            self.changePlaneThickness
+        )
+        self.planeThicknessDoubleSpinBox = planeThicknessDoubleSpinBox
+        self.planeThicknessLabel = QLabel(trans._('plane thickness:'))
 
         sld = QSlider(Qt.Horizontal, parent=self)
         sld.setFocusPolicy(Qt.NoFocus)
@@ -112,11 +140,15 @@ class QtImageControls(QtBaseImageControls):
         self.grid_layout.addWidget(self.interpComboBox, 5, 1)
         self.grid_layout.addWidget(self.renderLabel, 6, 0)
         self.grid_layout.addWidget(self.renderComboBox, 6, 1)
-        self.grid_layout.addWidget(self.isoThresholdLabel, 7, 0)
-        self.grid_layout.addWidget(self.isoThresholdSlider, 7, 1)
-        self.grid_layout.addWidget(self.attenuationLabel, 8, 0)
-        self.grid_layout.addWidget(self.attenuationSlider, 8, 1)
-        self.grid_layout.setRowStretch(9, 1)
+        self.grid_layout.addWidget(self.raycastingModeLabel, 7, 0)
+        self.grid_layout.addWidget(self.raycastingModeComboBox, 7, 1)
+        self.grid_layout.addWidget(self.planeThicknessLabel, 8, 0)
+        self.grid_layout.addWidget(self.planeThicknessDoubleSpinBox, 8, 1)
+        self.grid_layout.addWidget(self.isoThresholdLabel, 9, 0)
+        self.grid_layout.addWidget(self.isoThresholdSlider, 9, 1)
+        self.grid_layout.addWidget(self.attenuationLabel, 10, 0)
+        self.grid_layout.addWidget(self.attenuationSlider, 10, 1)
+        self.grid_layout.setRowStretch(11, 1)
         self.grid_layout.setColumnStretch(1, 1)
         self.grid_layout.setSpacing(4)
 
@@ -235,6 +267,23 @@ class QtImageControls(QtBaseImageControls):
             )
             self.renderComboBox.setCurrentIndex(index)
             self._toggle_rendering_parameter_visbility()
+
+    def changeMode(self, text):
+        self.layer.mode = text
+
+    def _on_mode_change(self, event):
+        with self.layer.events.mode.blocker():
+            index = self.raycastingModeComboBox.findText(
+                self.layer.mode, Qt.MatchFixedString
+            )
+            self.renderComboBox.setCurrentIndex(index)
+
+    def changePlaneThickness(self, value):
+        self.layer.plane_thickness = value
+
+    def _on_plane_thickness_change(self, event):
+        with self.layer.events.plane_thickness.blocker():
+            self.planeThicknessDoubleSpinBox.setValue(event.value)
 
     def _toggle_rendering_parameter_visbility(self):
         """Hide isosurface rendering parameters if they aren't needed."""

@@ -181,6 +181,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         gamma=1,
         interpolation='nearest',
         rendering='mip',
+        mode='volume',
         iso_threshold=0.5,
         attenuation=0.05,
         name=None,
@@ -194,6 +195,9 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         blending='translucent',
         visible=True,
         multiscale=None,
+        plane_position=None,
+        plane_thickness=10,
+        plane_angles=[0, 0],
     ):
         if isinstance(data, types.GeneratorType):
             data = list(data)
@@ -250,11 +254,6 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
             plane_angles=Event,
         )
 
-        self._mode = 'plane'  # Against @jni's objections
-        self._plane_thickness = 1
-        self._plane_position = np.zeros(3)
-        self._plane_angles = np.zeros(2)
-
         # Set data
         self.rgb = rgb
         self._data = data
@@ -278,11 +277,14 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
 
         self._new_empty_slice()
 
-        # Set contrast
-        # _limits and colormaps
+        # Set contrast limits, colormaps and plane parameters
         self._gamma = gamma
         self._iso_threshold = iso_threshold
         self._attenuation = attenuation
+        self._mode = mode
+        self._plane_thickness = 1
+        self._plane_position = np.zeros(3)
+        self._plane_angles = np.zeros(2)
         if contrast_limits is None:
             self.contrast_limits_range = self._calc_data_range()
         else:
@@ -300,6 +302,11 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         }
         self.interpolation = interpolation
         self.rendering = rendering
+        self.mode = mode  # Against @jni's objections
+        self.plane_thickness = plane_thickness
+        self.plane_position = np.array(self.data.shape) / 2
+        print(f'plane position: {self.plane_position}')
+        self.plane_angles = plane_angles
 
         # Trigger generation of view slice and thumbnail
         self._update_dims()
