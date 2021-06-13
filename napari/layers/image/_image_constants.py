@@ -76,3 +76,17 @@ class Rendering(StringEnum):
     MINIP = auto()
     ATTENUATED_MIP = auto()
     AVERAGE = auto()
+
+
+class RaycastingMode(StringEnum):
+    """Raycasting mode for the volume rendering.
+
+    Selects a preset raycasting mode in vispy that determines how rays are
+    cast during volume rendering. Options include:
+        * ``volume``: rays are cast through the entire volume.
+        * ``plane``: rays are cast perpendicular to an arbitrary plane
+          in the volume.
+    """
+
+    VOLUME = auto()
+    PLANE = auto()

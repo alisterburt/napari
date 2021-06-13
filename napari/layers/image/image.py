@@ -473,7 +473,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         * ``additive``: voxel colors are added along the view ray until the
           result is saturated.
         * ``iso``: isosurface. Cast a ray until a certain threshold is
-          encountered. At that location, lighning calculations are performed to
+          encountered. At that location, lighting calculations are performed to
           give the visual appearance of a surface.
         * ``attenuated_mip``: attenuated maximum intensity projection. Cast a
           ray and attenuate values based on integral of encountered values,
@@ -495,6 +495,15 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
 
     @property
     def mode(self):
+        """Return current raycasting mode.
+
+        Selects a preset raycasting mode in vispy that determines how rays are
+        cast during volume rendering. Options include:
+
+        * ``volume``: rays are cast through the entire volume.
+        * ``plane``: rays are cast perpendicular to an arbitrary plane
+          in the volume.
+        """
         return self._mode
 
     @mode.setter
