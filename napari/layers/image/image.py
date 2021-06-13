@@ -16,7 +16,12 @@ from ...utils.translations import trans
 from ..base import Layer
 from ..intensity_mixin import IntensityVisualizationMixin
 from ..utils.layer_utils import calc_data_range
-from ._image_constants import Interpolation, Interpolation3D, Rendering
+from ._image_constants import (
+    Interpolation,
+    Interpolation3D,
+    RaycastingMode,
+    Rendering,
+)
 from ._image_slice import ImageSlice
 from ._image_slice_data import ImageSliceData
 from ._image_utils import guess_multiscale, guess_rgb
@@ -504,12 +509,12 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         * ``plane``: rays are cast perpendicular to an arbitrary plane
           in the volume.
         """
-        return self._mode
+        return str(self._mode)
 
     @mode.setter
     def mode(self, value: str):
         if self._mode != value:
-            self._mode = value
+            self._mode = RaycastingMode(value)
             self.events.mode()
 
     @property
