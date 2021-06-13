@@ -37,10 +37,10 @@ coordinates).
 import numpy as np
 from numpy.typing import ArrayLike
 
-from vispy.visuals import Visual
-from vispy.visuals.shaders import Function
 from vispy.color import get_colormap
 from vispy.gloo import Texture3D, TextureEmulated3D, VertexBuffer, IndexBuffer
+from vispy.visuals import Visual
+from vispy.visuals.shaders import Function
 
 # todo: implement more render methods (port from visvis)
 # todo: allow anisotropic data
@@ -314,7 +314,7 @@ RAYCASTING_SETUP_PLANE = """
     // and texture coordinates
     vec3 intersection_tex = intersection / u_shape;
 
-    // discard if intersection not in texture
+    // discard fragment if intersection not in texture
     if (intersection_tex.x > 1.0 )
         discard;
     if (intersection_tex.y > 1.0 )
@@ -495,9 +495,12 @@ AVG_SNIPPETS = dict(
         """,
 )
 
-RENDERING_MODES = ('plane', 'volume')
+RAYCASTING_MODES = {
+    'volume': RAYCASTING_SETUP_VOLUME,
+    'plane': RAYCASTING_SETUP_PLANE,
+}
 
-RENDERING_METHOD_SNIPPETS = {
+RENDERING_METHODS = {
     'mip': MIP_SNIPPETS,
     'attenuated_mip': ATTENUATED_MIP_SNIPPETS,
     'minip': MINIP_SNIPPETS,
@@ -505,16 +508,6 @@ RENDERING_METHOD_SNIPPETS = {
     'translucent': TRANSLUCENT_SNIPPETS,
     'additive': ADDITIVE_SNIPPETS,
     'average': AVG_SNIPPETS,
-}
-
-FRAG_DICT_VOLUME = {
-    k: FRAG_SHADER.format(raycasting_setup=RAYCASTING_SETUP_VOLUME, **snippets)
-    for k, snippets in RENDERING_METHOD_SNIPPETS.items()
-}
-
-FRAG_DICT_PLANE = {
-    k: FRAG_SHADER.format(raycasting_setup=RAYCASTING_SETUP_PLANE, **snippets)
-    for k, snippets in RENDERING_METHOD_SNIPPETS.items()
 }
 
 
@@ -860,7 +853,7 @@ class VolumeVisual(Visual):
     @method.setter
     def method(self, method):
         # Check and save
-        known_methods = list(RENDERING_METHOD_SNIPPETS.keys())
+        known_methods = list(RENDERING_METHODS.keys())
         if method not in known_methods:
             raise ValueError('Volume render method should be in %r, not %r' %
                              (known_methods, method))
@@ -874,8 +867,9 @@ class VolumeVisual(Visual):
 
     @mode.setter
     def mode(self, mode):
-        if mode not in RENDERING_MODES:
-            raise ValueError(f"Volume render mode should be in {RENDERING_MODES}, not {mode}")
+        if mode not in RAYCASTING_MODES:
+            raise ValueError(
+                f"Volume render mode should be in {RAYCASTING_MODES}, not {mode}")
         self._mode = mode
         self.update_frag_shader_on_gpu()
 
@@ -886,7 +880,7 @@ class VolumeVisual(Visual):
         if 'u_attenuation' in self.shared_program:
             self.shared_program['u_attenuation'] = None
 
-        self.shared_program.frag = self.frag_dict[self.method]
+        self.shared_program.frag = self.fragment_shaders[(self.mode, self.method)]
         self.shared_program.frag['sampler_type'] = self._tex.glsl_sampler_type
         self.shared_program.frag['sample'] = self._tex.glsl_sample
         self.shared_program.frag['cmap'] = Function(self._cmap.glsl_map)
@@ -895,11 +889,18 @@ class VolumeVisual(Visual):
         self.update()
 
     @property
-    def frag_dict(self):
-        if self.mode == 'volume':
-            return FRAG_DICT_VOLUME
-        if self.mode == 'plane':
-            return FRAG_DICT_PLANE
+    def fragment_shaders(self):
+        """a dict of available fragment shaders:
+        { (raycasting_mode, rendering method): fragment_shader }
+        """
+        fragment_shaders = {
+            (mode_name, method_name): FRAG_SHADER.format(
+                raycasting_setup=mode_snippet, **method_snippets
+            )
+            for mode_name, mode_snippet in RAYCASTING_MODES.items()
+            for method_name, method_snippets in RENDERING_METHODS.items()
+        }
+        return fragment_shaders
 
     @property
     def threshold(self):
