@@ -495,12 +495,12 @@ AVG_SNIPPETS = dict(
         """,
 )
 
-RAYCASTING_MODES = {
+RAYCASTING_MODE_SNIPPETS = {
     'volume': RAYCASTING_SETUP_VOLUME,
     'plane': RAYCASTING_SETUP_PLANE,
 }
 
-RENDERING_METHODS = {
+RENDERING_METHOD_SNIPPETS = {
     'mip': MIP_SNIPPETS,
     'attenuated_mip': ATTENUATED_MIP_SNIPPETS,
     'minip': MINIP_SNIPPETS,
@@ -509,6 +509,9 @@ RENDERING_METHODS = {
     'additive': ADDITIVE_SNIPPETS,
     'average': AVG_SNIPPETS,
 }
+
+RAYCASTING_MODES = RAYCASTING_MODE_SNIPPETS.keys()
+RENDERING_METHODS = RENDERING_METHOD_SNIPPETS.keys()
 
 
 class VolumeVisual(Visual):
@@ -853,10 +856,9 @@ class VolumeVisual(Visual):
     @method.setter
     def method(self, method):
         # Check and save
-        known_methods = list(RENDERING_METHODS.keys())
-        if method not in known_methods:
+        if method not in RENDERING_METHODS:
             raise ValueError('Volume render method should be in %r, not %r' %
-                             (known_methods, method))
+                             (RENDERING_METHODS, method))
         self._method = method
         self.update_frag_shader_on_gpu()
 
@@ -897,8 +899,8 @@ class VolumeVisual(Visual):
             (mode_name, method_name): FRAG_SHADER.format(
                 raycasting_setup=mode_snippet, **method_snippets
             )
-            for mode_name, mode_snippet in RAYCASTING_MODES.items()
-            for method_name, method_snippets in RENDERING_METHODS.items()
+            for mode_name, mode_snippet in RAYCASTING_MODE_SNIPPETS.items()
+            for method_name, method_snippets in RENDERING_METHOD_SNIPPETS.items()
         }
         return fragment_shaders
 
