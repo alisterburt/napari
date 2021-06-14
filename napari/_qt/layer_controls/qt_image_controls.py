@@ -87,6 +87,8 @@ class QtImageControls(QtBaseImageControls):
         self.raycastingModeLabel = QLabel(trans._('raycasting mode:'))
 
         planeThicknessDoubleSpinBox = QDoubleSpinBox(self)
+        planeThicknessDoubleSpinBox.setMinimum(1.0)
+        planeThicknessDoubleSpinBox.setMaximum(999.0)
         planeThicknessDoubleSpinBox.valueChanged.connect(
             self.changePlaneThickness
         )

@@ -85,6 +85,7 @@ uniform vec3 u_shape;
 uniform vec2 clim;
 uniform float gamma;
 uniform float u_threshold;
+uniform float u_attenuation;
 uniform float u_relative_step_size;
 
 //varyings
