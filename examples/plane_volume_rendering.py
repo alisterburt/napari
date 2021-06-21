@@ -7,7 +7,7 @@ blobs = data.binary_blobs(length=64, volume_fraction=0.1, n_dim=3).astype(
 )
 viewer = napari.Viewer(ndisplay=3)
 # add the volume
-layer = viewer.add_image(blobs, scale=[3, 1, 1])
+layer = viewer.add_image(blobs)
 
 layer.mode = 'plane'
 layer.rendering = 'average'
