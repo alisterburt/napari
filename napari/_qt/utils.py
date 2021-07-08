@@ -276,7 +276,7 @@ def add_flash_animation(
     widget.setGraphicsEffect(effect)
 
     widget._flash_animation = QPropertyAnimation(effect, b"color")
-    widget._flash_animation.setStartValue(QColor(0, 0, 0, 0))
+    widget._flash_animation.setStartValue(QColor(*color))
     widget._flash_animation.setEndValue(QColor(0, 0, 0, 0))
     widget._flash_animation.setLoopCount(1)
 
@@ -288,9 +288,8 @@ def add_flash_animation(
 
     widget._flash_animation.start()
 
-    # now  set an actual time for the flashing and an intermediate color
+    # now set an actual time for the flashing
     widget._flash_animation.setDuration(duration)
-    widget._flash_animation.setKeyValueAt(0.5, QColor(*color))
 
 
 def remove_flash_animation(widget: QWidget):
