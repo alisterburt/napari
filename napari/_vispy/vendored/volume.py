@@ -426,14 +426,14 @@ RAYCASTING_SETUP_PLANE = """
 
     // discard if intersection not in texture
     
-    float out_of_bounds = 0;
+    int out_of_bounds = 0;
 
-    out_of_bounds += float(intersection_tex.x > 1);
-    out_of_bounds += float(intersection_tex.x < 0);
-    out_of_bounds += float(intersection_tex.y > 1);
-    out_of_bounds += float(intersection_tex.y < 0);
-    out_of_bounds += float(intersection_tex.z > 1);
-    out_of_bounds += float(intersection_tex.z < 0);
+    out_of_bounds += int(intersection_tex.x > 1);
+    out_of_bounds += int(intersection_tex.x < 0);
+    out_of_bounds += int(intersection_tex.y > 1);
+    out_of_bounds += int(intersection_tex.y < 0);
+    out_of_bounds += int(intersection_tex.z > 1);
+    out_of_bounds += int(intersection_tex.z < 0);
     
     if (out_of_bounds > 0) {
         discard;
