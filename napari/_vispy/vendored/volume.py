@@ -107,6 +107,10 @@ uniform vec3 u_plane_normal;
 uniform vec3 u_plane_position;
 uniform float u_plane_thickness;
 
+// unifroms for spotlight definition. Defined in ndc.
+uniform vec3 u_spotlight_position = vec3(0.5, 0.5, 0.5);
+uniform float u_spotlight_radius = 0.2;
+
 // the tolerance for testing equality of floats with floatEqual and floatNotEqual
 const float u_equality_tolerance = 1e-8;
 
@@ -365,12 +369,17 @@ void main() {
     while (iter < nsteps) {
         for (iter=iter; iter<nsteps; iter++)
         {
-            // Get sample color
-            vec4 color = $sample(u_volumetex, loc);
-            float val = color.r;
-
-            $in_loop
-
+            // Only sample volume if loc is within spotlight distance
+            float distance_to_spotlight = length(loc - u_spotlight_position);
+            if (distance_to_spotlight < u_spotlight_radius)
+            {
+                // Get sample color
+                vec4 color = $sample(u_volumetex, loc);
+                float val = color.r;
+                
+                $in_loop
+            }
+            
             // Advance location deeper into the volume
             loc += step;
         }
