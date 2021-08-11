@@ -74,7 +74,7 @@ def shift_plane_along_normal(viewer, event):
     )
 
     # Calculate intersection of click with plane through data
-    intersection = plane_layer.plane.intersect_with_line(
+    intersection = plane_layer.plane.calculate_line_intersection(
         line_position=near_point, line_direction=event.view_direction
     )
 
@@ -145,8 +145,36 @@ def shift_plane_along_normal(viewer, event):
     # Re-enable
     plane_layer.interactive = True
 
+@viewer.bind_key('c')
+def cycle_plane_orientation(viewer):
+    """Cycle the orientation of the plane.
+
+    If the cursor intersects the displayed plane, the plane will be reoriented
+    around that intersection. Otherwise, it will be reoriented around its current points
+    """
+    layer = viewer.layers['plane']
+
+    start_position, end_position = layer.get_ray_intersections(
+        viewer.cursor.position,
+        viewer.camera.view_direction,
+        list(viewer.dims.displayed),
+    )
+    if start_position is not None:
+        view_direction_layer = end_position - start_position
+        intersection = layer.plane.calculate_line_intersection(
+            line_position=start_position, line_direction=view_direction_layer
+        )
+        if point_in_bounding_box(intersection, layer._extent_data):
+            layer.plane.position = intersection
+    layer.plane.cycle_orientation()
 
 viewer.axes.visible = True
 viewer.camera.angles = (45, 45, 45)
 viewer.camera.zoom = 5
+viewer.text_overlay.visible = True
+viewer.text_overlay.text = """- Click and drag the plane to move it
+- Click the plane to add a point in 3D
+- Hit 'c' to cycle through plane orientations
+"""
+
 napari.run()

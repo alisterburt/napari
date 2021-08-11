@@ -54,14 +54,62 @@ def test_plane_manager_3_tuple():
 @pytest.mark.parametrize(
     'normal, expected',
     [
-        ((1, 0.2, 0.2), (1, 0, 0)),
-        ((-1, 0.2, 0.2), (1, 0, 0)),
-        ((0.2, 1, 0.2), (0, 1, 0)),
-        ((0.2, -1, 0.2), (0, 1, 0)),
+        ((1, 0.2, 0.2), 0),
+        ((-1, 0.2, 0.2), 0),
+        ((0.2, 1, 0.2), 1),
+        ((0.2, -1, 0.2), 1),
     ],
 )
-def test_plane_manager_align_to_nearest_axis(normal, expected):
+def test_most_similar_axis(normal, expected):
+    plane = PlaneManager(normal=normal)
+    assert plane._most_similar_axis == expected
+
+
+@pytest.mark.parametrize(
+    'normal, expected',
+    [
+        ((1, 0.2, 0.2), (1, 0, 0)),
+        ((-1, 0.2, 0.2), (-1, 0, 0)),
+        ((0.2, 1, 0.2), (0, 1, 0)),
+        ((0.2, -1, 0.2), (0, -1, 0)),
+    ],
+)
+def test_align_to_nearest_axis(normal, expected):
     """Test axis alignment method"""
-    plane_manager = PlaneManager(position=(0, 0, 0), normal=normal)
+    plane_manager = PlaneManager(normal=normal)
     plane_manager.align_normal_to_nearest_axis()
     assert plane_manager.normal == expected
+
+
+@pytest.mark.parametrize(
+    'normal, expected',
+    [
+        ((1, 0, 0), True),
+        ((0, 1, 0), True),
+        ((0, 0, 1), True),
+        ((-1, 0, 0), True),
+        ((1, 1, 1), False),
+    ],
+)
+def test_is_axis_aligned(normal, expected):
+    plane = PlaneManager(normal=normal)
+    assert plane.is_axis_aligned == expected
+
+
+def test_cycle():
+    """Test that cycling first snaps the normal to the nearest axis, then
+    cycles between axis aligned axes.
+    """
+    plane = PlaneManager(normal=(0.2, 0.8, 0.2))
+
+    # first cycle should align to nearest axis
+    plane.cycle_orientation()
+    assert plane.normal == (0, 1, 0)
+
+    # next cycle should roll axes
+    plane.cycle_orientation()
+    assert plane.normal == (0, 0, 1)
+
+    # should continue rolling
+    plane.cycle_orientation()
+    assert plane.normal == (1, 0, 0)
