@@ -49,3 +49,19 @@ def test_plane_manager_3_tuple():
         plane = PlaneManager(  # noqa: F841
             position=(32, 32, 32, 32), normal_vector=(1, 0, 0, 0), thickness=10
         )
+
+
+@pytest.mark.parametrize(
+    'normal, expected',
+    [
+        ((1, 0.2, 0.2), (1, 0, 0)),
+        ((-1, 0.2, 0.2), (1, 0, 0)),
+        ((0.2, 1, 0.2), (0, 1, 0)),
+        ((0.2, -1, 0.2), (0, 1, 0)),
+    ],
+)
+def test_plane_manager_align_to_nearest_axis(normal, expected):
+    """Test axis alignment method"""
+    plane_manager = PlaneManager(position=(0, 0, 0), normal=normal)
+    plane_manager.align_normal_to_nearest_axis()
+    assert plane_manager.normal == expected

@@ -77,3 +77,24 @@ class PlaneManager(EventedModel):
         plane_normal = np.cross(ab, ac)
         plane_position = np.mean(abc, axis=0)
         return cls(position=plane_position, normal=plane_normal)
+
+    def align_normal_to_axis(self, axis: int = None):
+        """Align the plane normal to a specific axis.
+
+        If no axis is provided, the normal will align to its closest axis.
+
+        Parameters
+        ----------
+        axis : int
+            Index of the axis to which the plane normal should align.
+        """
+        if axis is None:
+            self.align_normal_to_nearest_axis()
+        normal = np.zeros(len(self.normal))
+        normal[axis] = 1
+        self.normal = normal
+
+    def align_normal_to_nearest_axis(self):
+        """Align the plane normal to its closest axis"""
+        nearest_axis = np.abs(self.normal).argmax()
+        self.align_normal_to_axis(nearest_axis)
