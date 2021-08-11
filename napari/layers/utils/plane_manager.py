@@ -38,6 +38,14 @@ class PlaneManager(EventedModel):
     def _ensure_tuple(cls, v):
         return tuple(v)
 
+    @property
+    def nearest_axis(self):
+        return np.abs(self.normal).argmax()
+
+    @property
+    def is_axis_aligned(self):
+        return np.abs(np.max(np.abs(self.normal)) - 1) < 1e-6
+
     def shift_along_normal_vector(self, distance: float):
         """Shift the plane along its normal vector by a given distance."""
         self.position += distance * self.normal
@@ -78,23 +86,25 @@ class PlaneManager(EventedModel):
         plane_position = np.mean(abc, axis=0)
         return cls(position=plane_position, normal=plane_normal)
 
-    def align_normal_to_axis(self, axis: int = None):
+    def align_normal_to_axis(self, axis: int):
         """Align the plane normal to a specific axis.
-
-        If no axis is provided, the normal will align to its closest axis.
 
         Parameters
         ----------
         axis : int
             Index of the axis to which the plane normal should align.
         """
-        if axis is None:
-            self.align_normal_to_nearest_axis()
         normal = np.zeros(len(self.normal))
         normal[axis] = 1
         self.normal = normal
 
     def align_normal_to_nearest_axis(self):
         """Align the plane normal to its closest axis"""
-        nearest_axis = np.abs(self.normal).argmax()
-        self.align_normal_to_axis(nearest_axis)
+        self.align_normal_to_axis(self.nearest_axis)
+
+    def cycle_normal_vector(self):
+        """Cycle the plane normal between axis aligned axes"""
+        if self.is_axis_aligned:
+            self.normal = np.roll(self.normal, shift=1)
+        else:
+            self.align_normal_to_nearest_axis()
