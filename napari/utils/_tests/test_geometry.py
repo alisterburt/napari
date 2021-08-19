@@ -102,6 +102,7 @@ def test_intersect_line_with_multiple_planes_3d():
         ([5, 5, 5], np.array([[0, 10], [0, 10], [0, 10]]), [5, 5, 5]),
         ([10, 10, 10], np.array([[0, 10], [0, 10], [0, 10]]), [9, 9, 9]),
         ([5, 5, 15], np.array([[0, 10], [0, 10], [0, 10]]), [5, 5, 9]),
+        ([-5, 5, -5], np.array([[-1, 1], [-1, 1], [-1, 1]]), [-1, 1, -1]),
     ],
 )
 def test_clamp_point_to_bounding_box(point, bounding_box, expected):
