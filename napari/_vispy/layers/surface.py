@@ -1,7 +1,9 @@
 import warnings
+from collections import dict_keys
 
 import numpy as np
 from vispy.color import Colormap as VispyColormap
+from vispy.visuals.filters import WireframeFilter
 
 from ...utils.translations import trans
 from ..visuals.surface import SurfaceVisual
@@ -19,6 +21,8 @@ class VispySurfaceLayer(VispyBaseLayer):
     def __init__(self, layer):
         node = SurfaceVisual()
         super().__init__(layer, node)
+
+        self.wireframe_filter = WireframeFilter(wireframe_only=True)
 
         self.layer.events.colormap.connect(self._on_colormap_change)
         self.layer.events.contrast_limits.connect(
@@ -98,6 +102,46 @@ class VispySurfaceLayer(VispyBaseLayer):
         else:
             self.node.shading = self.layer.shading
         self.node.mesh_data_changed()
+
+    @property
+    def wireframe_filter_states(self) -> dict:
+        states = {
+            'overlay': dict(wireframe_only=False, faces_only=False),
+            'overlay_only': dict(wireframe_only=True, faces_only=False),
+        }
+        return states
+
+    @property
+    def valid_wireframe_states(self) -> dict_keys:
+        return self.wireframe_filter_states.keys()
+
+    @property
+    def current_wireframe_state(self):
+        if self.layer.wireframe in self.valid_wireframe_states:
+            return self.wireframe_filter_states[self.layer.wireframe]
+        else:
+            ValueError(
+                f"{self.layer.wireframe} not in {self.valid_wireframe_states}"
+            )
+
+    def update_wireframe_filter_from_layer(self):
+        for attr, value in self.current_wireframe_state.items():
+            setattr(self.shading_filter, attr, value)
+
+    def _on_wireframe_change(self, event=None):
+        if self.layer.wireframe == 'none':
+            self.ensure_wireframe_filter_detached()
+        else:
+            self.update_wireframe_filter_from_layer()
+            self.ensure_wireframe_filter_attached()
+
+    def ensure_wireframe_filter_attached(self):
+        if not self.wireframe_filter.attached:
+            self.node.attach(self.wireframe_filter)
+
+    def ensure_wireframe_filter_detached(self):
+        if self.wireframe_filter.attached:
+            self.node.detach(self.wireframe_filter)
 
     def reset(self, event=None):
         super().reset()
