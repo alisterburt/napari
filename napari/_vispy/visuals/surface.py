@@ -1,5 +1,9 @@
+from vispy.scene.visuals import create_visual_node
+from vispy.visuals import MeshVisual
+
 from .clipping_planes_mixin import ClippingPlanesMixin
-from .mesh import Mesh
+
+Mesh = create_visual_node(MeshVisual)
 
 
 class SurfaceVisual(ClippingPlanesMixin, Mesh):
