@@ -1,4 +1,5 @@
 import warnings
+from typing import Union
 
 import numpy as np
 
@@ -8,7 +9,7 @@ from ...utils.translations import trans
 from ..base import Layer
 from ..intensity_mixin import IntensityVisualizationMixin
 from ..utils.layer_utils import calc_data_range
-from ._surface_constants import Shading
+from ._surface_constants import Shading, Wireframe
 
 
 # Mixin must come before Layer
@@ -76,6 +77,15 @@ class Surface(IntensityVisualizationMixin, Layer):
                 Corresponds to shading='flat'.
             * Shading.SMOOTH
                 Corresponds to shading='smooth'.
+    wireframe: str, Wireframe
+        One of a list of preset wireframe modes that determine how the surface
+        is rendered.
+            * Wireframe.NONE
+                Corresponds to wireframe='none'.
+            * Wireframe.OVERLAY
+                Corresponds to wireframe='overlay'.
+            * Wireframe.WIREFRAME_ONLY
+                Corresponds to wireframe='wireframe_only'.
     visible : bool
         Whether the layer visual is currently being displayed.
     cache : bool
@@ -146,6 +156,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         opacity=1,
         blending='translucent',
         shading='flat',
+        wireframe='none',
         visible=True,
         cache=True,
         experimental_clipping_planes=None,
@@ -170,7 +181,12 @@ class Surface(IntensityVisualizationMixin, Layer):
             experimental_clipping_planes=experimental_clipping_planes,
         )
 
-        self.events.add(interpolation=Event, rendering=Event, shading=Event)
+        self.events.add(
+            interpolation=Event,
+            rendering=Event,
+            shading=Event,
+            wireframe=Event,
+        )
 
         # assign mesh data and establish default behavior
         if len(data) not in (2, 3):
@@ -206,8 +222,9 @@ class Surface(IntensityVisualizationMixin, Layer):
         # Trigger generation of view slice and thumbnail
         self._update_dims()
 
-        # Shading mode
+        # Initialise shading and wireframe mode
         self._shading = shading
+        self._wireframe = wireframe
 
     def _calc_data_range(self, mode='data'):
         return calc_data_range(self.vertex_values)
@@ -323,6 +340,18 @@ class Surface(IntensityVisualizationMixin, Layer):
         else:
             self._shading = Shading(shading)
         self.events.shading(value=self._shading)
+
+    @property
+    def wireframe(self) -> str:
+        return str(self._wireframe)
+
+    @wireframe.setter
+    def wireframe(self, wireframe: Union[str, Wireframe]):
+        if isinstance(wireframe, Wireframe):
+            self._wireframe = wireframe
+        else:
+            self._wireframe = Wireframe(wireframe)
+        self.events.wireframe(value=self._wireframe)
 
     def _get_state(self):
         """Get dictionary of layer state.
