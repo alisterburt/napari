@@ -31,3 +31,27 @@ SHADING_TRANSLATION = {
     trans._("flat"): Shading.FLAT,
     trans._("smooth"): Shading.SMOOTH,
 }
+
+
+class Wireframe(StringEnum):
+    """Wireframe: Wireframe mode for the surface.
+
+    Selects a preset wireframe mode in vispy.
+            Wireframe.NONE
+                No wireframe on the surface.
+            Wireframe.OVERLAY
+                Wireframe and surface faces are both drawn.
+            Wireframe.WIREFRAME_ONLY
+                Only the wireframe of the surface is shown.
+    """
+
+    NONE = auto()
+    OVERLAY = auto()
+    WIREFRAME_ONLY = auto()
+
+
+WIREFRAME_TRANSLATION = {
+    trans._("none"): Wireframe.NONE,
+    trans._("overlay"): Wireframe.OVERLAY,
+    trans._("wireframe_only"): Wireframe.WIREFRAME_ONLY,
+}
