@@ -1168,6 +1168,15 @@ class Layer(KeymapProvider, MousemapProvider, ABC):
         """An axis aligned (self._ndisplay, 2) bounding box around the data"""
         return self._extent_data[:, dims_displayed_mask].T
 
+    def _display_bounding_box_augmented(self, dims_displayed: np.ndarray):
+        """An augmented, axis-aligned (self._ndisplay, 2) bounding box.
+
+        This is provided as an alternative bounding box for which to test
+        intersections in `Layer._get_value_3d()`.
+        Default behaviour is no-op but can be overridden by subclasses.
+        """
+        return self._display_bounding_box(dims_displayed)
+
     def click_plane_from_click_data(
         self,
         click_position: np.ndarray,
@@ -1203,6 +1212,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC):
         view_direction: np.ndarray,
         dims_displayed: List[int],
         world: bool = True,
+        augmented_bounding_box: bool = False,
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[None, None]]:
         """Get the start and end point for the ray extending
         from a point through the data bounding box.
@@ -1243,7 +1253,10 @@ class Layer(KeymapProvider, MousemapProvider, ABC):
             dims_displayed_mask[dims_displayed] = True
 
             # create the bounding box in data coordinates
-            bbox = self._display_bounding_box(dims_displayed_mask)
+            if augmented_bounding_box is True:
+                bbox = self._display_bounding_box_augmented(dims_displayed)
+            else:
+                bbox = self._display_bounding_box(dims_displayed_mask)
 
             # get the view direction in data coords (only displayed dims)
             if world is True:
@@ -1266,8 +1279,25 @@ class Layer(KeymapProvider, MousemapProvider, ABC):
                 click_pos_data, bbox, view_dir
             )
 
+            point_intersects_bounding_box = (
+                front_face_normal is not None and back_face_normal is not None
+            )
+
             # Get the locations in the plane where the ray intersects
-            if front_face_normal is not None and back_face_normal is not None:
+            if (
+                point_intersects_bounding_box is False
+                and augmented_bounding_box is False
+            ):
+                # try augmented bounding box only once
+                start_point, end_point = self.get_ray_intersections(
+                    position=position,
+                    view_direction=view_direction,
+                    dims_displayed=dims_displayed,
+                    world=world,
+                    augmented_bounding_box=True,
+                )
+                return start_point, end_point
+            if point_intersects_bounding_box:
                 start_point_disp_dims = (
                     intersect_line_with_axis_aligned_bounding_box_3d(
                         click_pos_data, view_dir, bbox, front_face_normal
@@ -1284,7 +1314,6 @@ class Layer(KeymapProvider, MousemapProvider, ABC):
                 start_point[dims_displayed_mask] = start_point_disp_dims
                 end_point = np.asarray(position)
                 end_point[dims_displayed_mask] = end_point_disp_dims
-
             else:
                 # if the click doesn't intersect the data bounding box,
                 # return None
