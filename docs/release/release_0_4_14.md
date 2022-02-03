@@ -72,7 +72,7 @@ Complete list of changes below:
 - [Talley Lambert](https://github.com/napari/napari/commits?author=tlambert03) - @tlambert03
 
 
-## 8 reviewers added to this release (alphabetical)
+## 11 reviewers added to this release (alphabetical)
 - [Alister Burt](https://github.com/napari/napari/commits?author=alisterburt) - @alisterburt
 - [Andy Sweet](https://github.com/napari/napari/commits?author=andy-sweet) - @andy-sweet
 - [Chi-li Chiu](https://github.com/napari/napari/commits?author=chili-chiu) - @chili-chiu
