@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import types
 import warnings
-from typing import TYPE_CHECKING, Sequence, Union
+from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 import numpy as np
 from scipy import ndimage as ndi
@@ -289,6 +289,7 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
             depiction=Event,
             iso_threshold=Event,
             attenuation=Event,
+            multiclass_colormap=Event,
         )
 
         self._array_like = True
@@ -425,6 +426,8 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
     def data(
         self, data: Union[LayerDataProtocol, Sequence[LayerDataProtocol]]
     ):
+        if isinstance(data, Tuple):
+            self.data = data
         self._data_raw = data
         # note, we don't support changing multiscale in an Image instance
         self._data = MultiScaleData(data) if self.multiscale else data  # type: ignore
@@ -433,6 +436,15 @@ class _ImageBase(IntensityVisualizationMixin, Layer):
         if self._keep_auto_contrast:
             self.reset_contrast_limits()
         self._set_editable()
+
+    @property
+    def multiclass_colormap(self):
+        return self._multiclass_colormap
+
+    @multiclass_colormap.setter
+    def multiclass_colormap(self, value):
+        self._multiclass_colormap = value
+        self.events.multiclass_colormap(value=self.multiclass_colormap)
 
     def _get_ndim(self):
         """Determine number of dimensions of the layer."""
